@@ -90,5 +90,5 @@ target/
 
 # Project Static Files
 data/
-models/
+/models/
 release/
