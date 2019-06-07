@@ -156,6 +156,16 @@ void testTail(REAL *con) {
     printf("%f %f %f %f\n", r_tot /lastTail, r_filter_tot /lastTail, r_rank /lastTail, r_filter_rank /lastTail);
 }
 
+REAL mrr_raw;
+REAL mr_raw;
+REAL hits_10_raw;
+REAL hits_3_raw;
+REAL hits_1_raw;
+REAL mrr_filter;
+REAL mr_filter;
+REAL hits_10_filter;
+REAL hits_3_filter;
+REAL hits_1_filter;
 extern "C"
 void test_link_prediction() {
     l_rank /= testTotal;
@@ -225,6 +235,18 @@ void test_link_prediction() {
     r_filter_tot_constrain /= testTotal;
     r3_filter_tot_constrain /= testTotal;
     r1_filter_tot_constrain /= testTotal;
+
+    // calculating final metrics (by @acg)
+    mrr_raw = (l_reci_rank+r_reci_rank)/2;
+    mr_raw = (l_rank+r_rank)/2;
+    hits_10_raw = (l_tot+r_tot)/2;
+    hits_3_raw = (l3_tot+r3_tot)/2;
+    hits_1_raw = (l1_tot+r1_tot)/2;
+    mrr_filter = (l_filter_reci_rank+r_filter_reci_rank)/2;
+    mr_filter = (l_filter_rank+r_filter_rank)/2;
+    hits_10_filter = (l_filter_tot+r_filter_tot)/2;
+    hits_3_filter = (l3_filter_tot+r3_filter_tot)/2;
+    hits_1_filter = (l1_filter_tot+r1_filter_tot)/2;
 
     printf("type constraint results:\n");
     

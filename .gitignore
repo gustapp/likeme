@@ -89,6 +89,6 @@ target/
 .mypy_cache/
 
 # Project Static Files
-data/
+/data/
 /models/
-release/
+/release/
