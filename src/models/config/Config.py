@@ -6,6 +6,7 @@ import time
 import datetime
 import ctypes
 import json
+import click
 
 class Config(object):
 	'''
@@ -355,18 +356,21 @@ class Config(object):
 			with self.sess.as_default():
 				if self.importName != None:
 					self.restore_tensorflow()
+				start_time = time.time()
 				if self.test_link_prediction:
 					total = self.lib.getTestTotal()
-					for times in range(total):
-						self.lib.getHeadBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr)
-						res = self.test_step(self.test_h, self.test_t, self.test_r)
-						self.lib.testHead(res.__array_interface__['data'][0])
+					with click.progressbar(range(total)) as total_times:
+						for times in total_times:
+							self.lib.getHeadBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr)
+							res = self.test_step(self.test_h, self.test_t, self.test_r)
+							self.lib.testHead(res.__array_interface__['data'][0])
 
-						self.lib.getTailBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr)
-						res = self.test_step(self.test_h, self.test_t, self.test_r)
-						self.lib.testTail(res.__array_interface__['data'][0])
-						if self.log_on:
-							print(times)
+							self.lib.getTailBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr)
+							res = self.test_step(self.test_h, self.test_t, self.test_r)
+							self.lib.testTail(res.__array_interface__['data'][0])
+							# if self.log_on:
+							# 	print(times)
+					print('Test Results Summary:')
 					self.lib.test_link_prediction()
 				if self.test_triple_classification:
 					self.lib.getValidBatch(self.valid_pos_h_addr, self.valid_pos_t_addr, self.valid_pos_r_addr, self.valid_neg_h_addr, self.valid_neg_t_addr, self.valid_neg_r_addr)

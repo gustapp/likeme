@@ -91,8 +91,8 @@ void testHead(REAL *con) {
 
     lastHead++;
 
-    printf("l_filter_s: %ld\n", l_filter_s);
-    printf("%f %f %f %f \n", l_tot / lastHead, l_filter_tot / lastHead, l_rank / lastHead, l_filter_rank / lastHead);
+    // printf("l_filter_s: %ld\n", l_filter_s);
+    // printf("%f %f %f %f \n", l_tot / lastHead, l_filter_tot / lastHead, l_rank / lastHead, l_filter_rank / lastHead);
 }
 
 extern "C"
@@ -152,8 +152,8 @@ void testTail(REAL *con) {
     r_reci_rank_constrain += 1.0/(1+r_s_constrain);
 
     lastTail++;
-    printf("r_filter_s: %ld\n", r_filter_s);
-    printf("%f %f %f %f\n", r_tot /lastTail, r_filter_tot /lastTail, r_rank /lastTail, r_filter_rank /lastTail);
+    // printf("r_filter_s: %ld\n", r_filter_s);
+    // printf("%f %f %f %f\n", r_tot /lastTail, r_filter_tot /lastTail, r_rank /lastTail, r_filter_rank /lastTail);
 }
 
 REAL mrr_raw;
@@ -166,6 +166,7 @@ REAL mr_filter;
 REAL hits_10_filter;
 REAL hits_3_filter;
 REAL hits_1_filter;
+
 extern "C"
 void test_link_prediction() {
     l_rank /= testTotal;
@@ -235,6 +236,7 @@ void test_link_prediction() {
     r_filter_tot_constrain /= testTotal;
     r3_filter_tot_constrain /= testTotal;
     r1_filter_tot_constrain /= testTotal;
+
 
     // calculating final metrics (by @acg)
     mrr_raw = (l_reci_rank+r_reci_rank)/2;
@@ -370,7 +372,7 @@ extern "C"
 void test_triple_classification(REAL *relThresh, REAL *score_pos, REAL *score_neg) {
     testAcc = (REAL *)calloc(relationTotal, sizeof(REAL));
     INT aveCorrect = 0, aveTotal = 0;
-    REAL aveAcc;
+    // REAL aveAcc;
     for (INT r = 0; r < relationTotal; r++) {
         if (validLef[r] == -1 || testLef[r] ==-1) continue;
         INT correct = 0, total = 0;
