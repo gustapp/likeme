@@ -55,7 +55,7 @@ import numpy as np
 
 e = eh_vec
 n_instances = 1000
-dimension = 100
+dimension = 50
 noise_rate = 0.03
 
 e_hat = []
