@@ -48,6 +48,7 @@ class Config(object):
 		self.test_link_prediction = False
 		self.test_triple_classification = False
 		self.early_stopping = None # It expects a tuple of the following: (patience, min_delta)
+		self.training_log = []
 
 	def init_link_prediction(self):
 		r'''
@@ -326,26 +327,28 @@ class Config(object):
 					patience, min_delta = self.early_stopping
 					best_loss = np.finfo('float32').max
 					wait_steps = 0
-				for times in range(self.train_times):
-					loss = 0.0
-					for batch in range(self.nbatches):
-						self.sampling()
-						loss += self.train_step(self.batch_h, self.batch_t, self.batch_r, self.batch_y)
-					if self.log_on:
+				with click.progressbar(range(self.train_times)) as total_times:
+					for times in total_times:
+						loss = 0.0
 						t_init = time.time()
+						for batch in range(self.nbatches):
+							self.sampling()
+							loss += self.train_step(self.batch_h, self.batch_t, self.batch_r, self.batch_y)
 						t_end = time.time()
-						print('Epoch: {}, loss: {}, time: {}'.format(times, loss, (t_end - t_init)))
-					if self.exportName != None and (self.export_steps!=0 and times % self.export_steps == 0):
-						self.save_tensorflow()
-					if self.early_stopping is not None:
-						if loss + min_delta < best_loss:
-							best_loss = loss
-							wait_steps = 0
-						elif wait_steps < patience:
-							wait_steps += 1
-						else:
-							print('Early stopping. Losses have not been improved enough in {} times'.format(patience))
-							break
+						self.training_log.append([times, loss, (t_end - t_init)])
+						# if self.log_on:
+						# 	print('Epoch: {}, loss: {}, time: {}'.format(times, loss, (t_end - t_init)))
+						if self.exportName != None and (self.export_steps!=0 and times % self.export_steps == 0):
+							self.save_tensorflow()
+						if self.early_stopping is not None:
+							if loss + min_delta < best_loss:
+								best_loss = loss
+								wait_steps = 0
+							elif wait_steps < patience:
+								wait_steps += 1
+							else:
+								print('Early stopping. Losses have not been improved enough in {} times'.format(patience))
+								break
 				if self.exportName != None:
 					self.save_tensorflow()
 				if self.out_path != None:

@@ -1,6 +1,7 @@
 import datetime
 import os
 import pandas as pd
+import json
 
 def generate_timestamp():
   return datetime.datetime.now().strftime('%y%m%d%H%M')
@@ -17,8 +18,11 @@ def save_model_info(model_info, export_path):
   results = pd.DataFrame([model_info])
 
   #store embedding results within the timestamp folder
-  results.to_csv('{}/model_info.tsv'.format(export_path), sep='\t', index=False)
-    
+  # results.to_csv('{}/model_info.tsv'.format(export_path), sep='\t', index=False)
+
+  with open('{}/model_info.json'.format(export_path), 'w+') as fp:
+    json.dump(model_info, fp, sort_keys=True, indent=4)
+
   #store historic of all embedding runs
   file_to_save = os.path.expanduser('~') + '/hdd/proj/OpenKE/results/model_info_history.csv'
   if not os.path.isfile(file_to_save):
@@ -29,6 +33,13 @@ def save_model_info(model_info, export_path):
     df = pd.read_csv(file_to_save, sep='\t')
     df = df.append(results, ignore_index=True)
     df.to_csv(file_to_save, sep='\t', index=False)
+
+def save_training_log(training_log, export_path):
+  
+  results = pd.DataFrame([training_log])
+
+  #store embedding results within the timestamp folder
+  results.to_csv('{}/training_log.csv'.format(export_path), index=False)
 
 def get_mid2name(dict_path, map_path='./mid2name.tsv'):
   """ Decode Machine Id (mid) to its correspondent name. 

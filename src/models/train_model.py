@@ -15,7 +15,9 @@ from os import listdir
 from os.path import isfile, join
 from dotenv import find_dotenv, load_dotenv
 from ctypes import c_float
-from util.tools import generate_timestamp, ensure_dir, save_model_info
+from util.tools import generate_timestamp, ensure_dir, save_model_info, save_training_log
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 @click.command()
 @click.option('--model', default='TransE', help='Embedding model (e.g. TransE)')
@@ -43,7 +45,6 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
 
     # Generate Timestamp for export path
     timestamp = generate_timestamp()
-    export_path = './models/{}/{}/'.format(dataset, timestamp)
 
     # Initialize Model Info
     if not model_info_file:
@@ -68,6 +69,8 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
     else:
         with open(model_info_file) as f:
             model_info = json.load(f)
+
+    export_path = './models/{}/{}/'.format(model_info['dataset'], model_info['timestamp'])
 
     if not os.path.exists(export_path):
         os.makedirs(export_path)
@@ -111,6 +114,7 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
     _model = getattr(__import__('embeddings'), model_info['model'])
     con.set_model(_model)
     #Train the model.
+    logger.info('Start training {} model on {} dataset'.format(model_info['model'], model_info['dataset']))
     con.run()
 
     #Test model
@@ -137,7 +141,9 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
             model_info['acc'] = c_float.in_dll(con.lib, 'aveAcc').value
 
         print('Model was tested in {} seconds'.format(end_time - start_time))
+
     save_model_info(model_info, export_path)
+    save_training_log(con.training_log, export_path)
 
 
 if __name__ == '__main__':

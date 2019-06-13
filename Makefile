@@ -85,7 +85,9 @@ test_environment:
 # PROJECT RULES                                                                 #
 #################################################################################
 
-
+## Train Model
+train:
+	python src/models/train_model.py
 
 #################################################################################
 # Self Documenting Commands                                                     #
