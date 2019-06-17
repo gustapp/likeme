@@ -419,14 +419,14 @@ class Config(object):
 		Returns:
 			list: k possible tail entity ids 	  	
 		'''
-		self.init_link_prediction()
+		#self.init_link_prediction()
 		if self.importName != None:
 			self.restore_tensorflow()
 		test_h = np.array([h] * self.entTotal)
 		test_r = np.array([r] * self.entTotal)
 		test_t = np.array(range(self.entTotal))
 		res = self.test_step(test_h, test_t, test_r).reshape(-1).argsort()[:k]
-		print(res)
+		#print(res)
 		return res
 
 	def predict_relation(self, h, t, k):
@@ -466,8 +466,10 @@ class Config(object):
 		if thresh != None:
 			if res < thresh:
 				print("triple (%d,%d,%d) is correct" % (h, t, r))
+				return True
 			else:
 				print("triple (%d,%d,%d) is wrong" % (h, t, r))
+				return False
 			return
 		self.lib.getValidBatch(self.valid_pos_h_addr, self.valid_pos_t_addr, self.valid_pos_r_addr, self.valid_neg_h_addr, self.valid_neg_t_addr, self.valid_neg_r_addr)
 		res_pos = self.test_step(self.valid_pos_h, self.valid_pos_t, self.valid_pos_r)
@@ -475,5 +477,7 @@ class Config(object):
 		self.lib.getBestThreshold(self.relThresh_addr, res_pos.__array_interface__['data'][0], res_neg.__array_interface__['data'][0])
 		if res < self.relThresh[r]:
 			print("triple (%d,%d,%d) is correct" % (h, t, r))
+			return True
 		else:
 			print("triple (%d,%d,%d) is wrong" % (h, t, r))
+			return False

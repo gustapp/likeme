@@ -59,5 +59,6 @@ def get_mid2name(dict_path, map_path='./mid2name.tsv'):
   # Group multiple names for same mid (mid2name_df is now a dictionary)
   mid2name_sf = mid2name_df.groupby('mid').apply(lambda x: "%s" % '| '.join(x['name']))
   mid2name_df = pd.DataFrame({'mid':mid2name_sf.index, 'name':mid2name_sf.values})
-
+  mid2name_df['name'] = mid2name_df['name'].apply(lambda x:x.split('|')[0])
+  
   return pd.merge(entity2id_df, mid2name_df, how='left', on=['mid'])

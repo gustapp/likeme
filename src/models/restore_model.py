@@ -31,4 +31,4 @@ def restore_model(model_path):
     _model = getattr(__import__('embeddings'), model_info['model'])
     con.set_model(_model)
 
-    return con
+    return model_info, con

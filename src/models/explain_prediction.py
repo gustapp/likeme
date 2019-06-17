@@ -4,30 +4,21 @@ import tensorflow as tf
 import numpy as np
 import json
 from restore_model import restore_model
+from util.tools import get_mid2name
 
-# Load Embedding Model
-con = restore_model('./models/FB13/1906141015/model_info.json')
-# con = config.Config()
-# con.set_in_path("./data/benchmarks/FB13/")
-# con.set_test_link_prediction(True)
-# con.set_test_triple_classification(True)
-# con.set_work_threads(4)
-# con.set_dimension(50)
-# con.set_import_files("./models/FB13/1906141015/model.vec.tf")
-# con.init()
-# con.set_model(embeddings.TransE)
+# Restore Embedding Model
+model_info, con = restore_model('./models/FB15K/1906171235/model_info.json')
 
 # Load Dictionaries
 """ Load Dictionaries: 
     * relation2id
     * entity2id
 """
-entity2id_path = './data/benchmarks/FB13/entity2id.txt'
-relation2id_path = './data/benchmarks/FB13/relation2id.txt'
+entity2id_path = './data/benchmarks/FB15K/entity2id.txt'
+relation2id_path = './data/benchmarks/FB15K/relation2id.txt'
 
 import pandas as pd
-e2i_df = pd.read_csv(entity2id_path, sep='\t', header=None, skiprows=[0])
-e2i_df.columns = ['entity', 'id']
+e2i_df = get_mid2name(entity2id_path)
 
 r2i_df = pd.read_csv(relation2id_path, sep='\t', header=None, skiprows=[0])
 r2i_df.columns = ['relation', 'id']
@@ -39,9 +30,11 @@ ke_ent = ke['ent_embeddings']
 ke_rel = ke['rel_embeddings']
 
 # Minimize search area by choosing only the nearest neighbors
-eh_id = 13445 #jesus
-r_id = 0 #religion
-res_id = [144] #judaism
+eh_id = 2956 #jesus
+r_id = 153 #religion
+res_id = [1314] 
+#judaism 7611
+#protestantism 1314
 
 """ Load Embedding """
 ke = con.get_parameters()
@@ -57,13 +50,29 @@ import numpy as np
 
 e = eh_vec
 n_instances = 1000
-dimension = 50
-noise_rate = 0.03
+dimension = model_info['dimension']
+noise_rate = 0
 
 e_hat = []
 for i in range(0, n_instances):
   noise = np.random.normal(0,noise_rate,dimension)
   e_hat.append(e + noise)
+
+# """ K-NN for the target relation """
+# rel_vec = ke_rel[153]
+
+# dist_per_rel = []
+# id_per_rel = []
+# id_count = 0
+# for rel_cand_vec in ke_rel:
+#   dist = np.mean(abs(rel_vec - rel_cand_vec))
+#   dist_per_rel.append(dist)
+#   id_per_rel.append(id_count)
+#   id_count += 1
+# knn_rels = sorted(dist_per_rel, key=abs, reverse=True)[:50]
+# # from sklearn.neighbors import NearestNeighbors
+# # nbrs = NearestNeighbors(n_neighbors=50, algorithm='ball_tree').fit(ke_rel)
+# # distances, knn_rels = nbrs.kneighbors([rel_vec])
 
 """ Minimize search area by choosing only the nearest neighbors """
 head_ent = eh_id
@@ -72,19 +81,28 @@ rel = r_id
 k_nn = 5
 feats_tb = []
 """ discover head entity features """
-for rel_id in [0, 3, 4, 6, 7, 12]:
+for rel_id in range(1345):
   feat_candidates_per_relation = con.predict_tail_entity(h=head_ent, r=rel_id, k=k_nn)
-  feats_tb.append((ke_rel[rel_id], [(ent_id, ke_ent[ent_id]) for ent_id in feat_candidates_per_relation]))
+  feats_per_rel = []
+  for feat_cand in feat_candidates_per_relation:
+    """ Discard false information """
+    if con.predict_triple(h=head_ent, r=rel_id, t=feat_cand):
+      feats_per_rel.append(feat_cand)
+  """ If relation is applicable """
+  if len(feats_per_rel) > 0:
+    feats_tb.append((rel_id, feats_per_rel))
 
 """ Discover feats noised set """
 e_hat_feats = []
-for rel, k_tails in feats_tb:
+for rel_id, k_tails in feats_tb:
+  rel = ke_rel[rel_id]
   labels = []
   for e_fake in e_hat:
     dist_per_inst = []
     id_per_inst = []
     """ Identify nearest entity to inference """
-    for tail_id, tail_cand in k_tails:
+    for tail_id in k_tails:
+      tail_cand = ke_ent[tail_id]
       dist = np.mean(abs(e_fake + rel - tail_cand))
       dist_per_inst.append(dist)
       id_per_inst.append(tail_id)
@@ -95,12 +113,12 @@ for rel, k_tails in feats_tb:
   print(str(len(e_hat_feats)))
 
 """ Build local dataset """
-feats_names = ['religion', 'profession', 'location', 'nationality', 'place_of_birth', 'ethnicity']
+feats_names = r2i_df['relation']
 e_hat_feats_df = pd.DataFrame(data=list(map(list,zip(*e_hat_feats))), columns=feats_names)
-    
+
 """ *** Interpretable Model *** """
     
-target_rel = 'religion'
+target_rel = '/people/person/religion'
 label = res_id[0]
 
 """ Replace target tail """
