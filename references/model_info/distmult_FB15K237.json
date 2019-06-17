@@ -1,0 +1,18 @@
+{
+    "dataset"                   : "FB15K237",
+    "model"                     : "DistMult",
+    "work_threads"              : 4,
+    "timestamp"                 : "DistMult_FB15K237_ref",
+
+    "test_link_prediction"      : true,
+    "test_triple_classification": false,
+    "lmbda"                     : 0.05,
+    "train_times"               : 1000,
+    "nbatches"                  : 100,
+    "alpha"                     : 0.5,
+    "bern"                      : 1,
+    "dimension"                 : 100,
+    "ent_neg_rate"              : 25,
+    "rel_neg_rate"              : 0,
+    "opt_method"                : "Adagrad"
+}

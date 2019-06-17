@@ -1,19 +1,20 @@
 import config
-import models
 import tensorflow as tf
 import numpy as np
 import json
+from os import listdir
+from os.path import isfile, join
 
-def predict_model(model_path):
+def restore_model(model_path):
     """ Load Trained model from model directory path.
     """
 
     # Load model info
-    with open(model_info_file) as f:
+    with open(model_path) as f:
         model_info = json.load(f)
 
     con = config.Config()
-    con.set_in_path('./data/raw/{}/'.format(model_info['dataset'])
+    con.set_in_path('./data/benchmarks/{}/'.format(model_info['dataset']))
     con.set_test_link_prediction(model_info['test_link_prediction'])
     con.set_test_triple_classification(model_info['test_triple_classification'])
     con.set_work_threads(model_info['work_threads'])

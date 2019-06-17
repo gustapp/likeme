@@ -3,25 +3,27 @@ import embeddings
 import tensorflow as tf
 import numpy as np
 import json
+from restore_model import restore_model
 
 # Load Embedding Model
-con = config.Config()
-con.set_in_path("./data/raw/FB13/")
-con.set_test_link_prediction(True)
-con.set_test_triple_classification(True)
-con.set_work_threads(4)
-con.set_dimension(50)
-con.set_import_files("./models/res/model.vec.tf")
-con.init()
-con.set_model(embeddings.TransE)
+con = restore_model('./models/FB13/1906141015/model_info.json')
+# con = config.Config()
+# con.set_in_path("./data/benchmarks/FB13/")
+# con.set_test_link_prediction(True)
+# con.set_test_triple_classification(True)
+# con.set_work_threads(4)
+# con.set_dimension(50)
+# con.set_import_files("./models/FB13/1906141015/model.vec.tf")
+# con.init()
+# con.set_model(embeddings.TransE)
 
 # Load Dictionaries
 """ Load Dictionaries: 
     * relation2id
     * entity2id
 """
-entity2id_path = './data/raw/FB13/entity2id.txt'
-relation2id_path = './data/raw/FB13/relation2id.txt'
+entity2id_path = './data/benchmarks/FB13/entity2id.txt'
+relation2id_path = './data/benchmarks/FB13/relation2id.txt'
 
 import pandas as pd
 e2i_df = pd.read_csv(entity2id_path, sep='\t', header=None, skiprows=[0])

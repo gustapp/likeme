@@ -1,20 +1,30 @@
 # -*- coding: utf-8 -*-
+import os
 import click
 import logging
+import kaggle
 from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
 
 
 @click.command()
-@click.argument('input_filepath', type=click.Path(exists=True))
-@click.argument('output_filepath', type=click.Path())
-def main(input_filepath, output_filepath):
-    """ Runs data processing scripts to turn raw data from (../raw) into
-        cleaned data ready to be analyzed (saved in ../processed).
+@click.option('--dataset_name', default='knowledge-graph-benchmarks', help='Kaggle dataset name to download.')
+@click.option('--dataset_path', default='./data/', type=click.Path(), help='Dataset output path.')
+def main(dataset_name, dataset_path):
+    """ Runs data processing scripts to download raw data from Kaggle 
+        to data directory (./data/...).
     """
     logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
+    logger.info('Start authenticating Kaggle account.')
 
+    # Authenticate Kaggle account
+    kaggle.api.authenticate()
+
+    if not os.path.exists(dataset_path):
+        logger.warn('Data directory not found. Creating a new one.')
+        os.makedirs(dataset_path)
+
+    kaggle.api.dataset_download_files(dataset_name, path=dataset_path, unzip=True)
+    logger.info('Successfully downloaded {} dataset to {} directory.'.format(dataset_name, dataset_path))
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -22,9 +32,5 @@ if __name__ == '__main__':
 
     # not used in this stub but often useful for finding various files
     project_dir = Path(__file__).resolve().parents[2]
-
-    # find .env automagically by walking up directories until it's found, then
-    # load up the .env entries as environment variables
-    load_dotenv(find_dotenv())
 
     main()

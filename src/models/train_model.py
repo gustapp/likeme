@@ -27,6 +27,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 @click.option('--nbatches', '-n', default=100, help='Number of batches.')
 @click.option('--alpha', '-a', default=0.001, help='Alpha.')
 @click.option('--margin', '-m', default=1.0, help='Margin.')
+@click.option('--lmbda', '-l', default=0.09, help='Lambda.')
 @click.option('--bern', '-b', default=0, help='Bernoulli.')
 @click.option('--dimension', '-dim', default=50, help='Dimension.')
 @click.option('--ent_neg_rate', '-enr', default=1, help='Entity negative rate.')
@@ -35,7 +36,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 @click.option('--test_link_prediction', '-tlp', default=True, help='Run link prediction tests.')
 @click.option('--test_triple_classification', '-ttc', default=True, help='Run triple classification tests.')
 @click.option('--model_info_file', '-mi', default=None, type=click.Path(exists=True), help='Model Info File.')
-def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, bern, dimension, \
+def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, lmbda, bern, dimension, \
  ent_neg_rate, rel_neg_rate, opt_method, test_link_prediction, test_triple_classification, model_info_file):
     """ Runs model training scripts to use raw data from (../raw) 
         train the knowledge embedding model to (../models).
@@ -60,6 +61,7 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
             'nbatches'                  : nbatches,
             'alpha'                     : alpha,
             'margin'                    : margin,
+            'lmbda'                     : lmbda,
             'bern'                      : bern,
             'dimension'                 : dimension,
             'ent_neg_rate'              : ent_neg_rate,
@@ -69,6 +71,9 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
     else:
         with open(model_info_file) as f:
             model_info = json.load(f)
+
+    if not model_info['timestamp']:
+        model_info['timestamp'] = timestamp
 
     export_path = './models/{}/{}/'.format(model_info['dataset'], model_info['timestamp'])
 
@@ -80,7 +85,7 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
 
     os.environ['CUDA_VISIBLE_DEVICES']='1'
     #Input training files from benchmarks/FB15K/ folder.
-    dataset_path = './data/raw/{}/'.format(model_info['dataset'])
+    dataset_path = './data/benchmarks/{}/'.format(model_info['dataset'])
     if not os.path.exists(dataset_path):
         raise ValueError('ERROR: Informed dataset path `{}` could not be found.'.format(dataset_path))
 
@@ -96,6 +101,7 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, ber
     con.set_alpha(model_info['alpha'])
     con.set_margin(model_info['margin'])
     con.set_bern(model_info['bern'])
+    con.set_lmbda(model_info['lmbda'])
     con.set_dimension(model_info['dimension'])
     con.set_ent_neg_rate(model_info['ent_neg_rate'])
     con.set_rel_neg_rate(model_info['rel_neg_rate'])

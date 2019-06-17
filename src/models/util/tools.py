@@ -23,8 +23,11 @@ def save_model_info(model_info, export_path):
   with open('{}/model_info.json'.format(export_path), 'w+') as fp:
     json.dump(model_info, fp, sort_keys=True, indent=4)
 
+  if not os.path.exists('./log/'):
+    os.makedirs('./log/')
+
   #store historic of all embedding runs
-  file_to_save = os.path.expanduser('~') + '/hdd/proj/OpenKE/results/model_info_history.csv'
+  file_to_save = './log/model_info_history.csv'
   if not os.path.isfile(file_to_save):
     print('creating file')
     results.to_csv(file_to_save, sep='\t', index=False)

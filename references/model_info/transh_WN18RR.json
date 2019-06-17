@@ -1,0 +1,18 @@
+{
+    "dataset"                   : "WN18RR",
+    "model"                     : "TransH",
+    "work_threads"              : 4,
+    "timestamp"                 : "TransH_WN18RR_ref",
+
+    "test_link_prediction"      : true,
+    "test_triple_classification": false,
+    "train_times"               : 300,
+    "nbatches"                  : 100,
+    "alpha"                     : 1.0,
+    "margin"                    : 6.0,
+    "bern"                      : 1,
+    "dimension"                 : 50,
+    "ent_neg_rate"              : 1,
+    "rel_neg_rate"              : 0,
+    "opt_method"                : "SGD"
+}

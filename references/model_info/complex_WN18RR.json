@@ -1,0 +1,18 @@
+{
+    "dataset"                   : "WN18RR",
+    "model"                     : "ComplEx",
+    "work_threads"              : 4,
+    "timestamp"                 : "ComplEx_WN18RR_ref",
+
+    "test_link_prediction"      : true,
+    "test_triple_classification": false,
+    "lmbda"                     : 0.09,
+    "train_times"               : 2000,
+    "nbatches"                  : 100,
+    "alpha"                     : 0.5,
+    "bern"                      : 1,
+    "dimension"                 : 100,
+    "ent_neg_rate"              : 25,
+    "rel_neg_rate"              : 0,
+    "opt_method"                : "Adagrad"
+}
