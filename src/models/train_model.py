@@ -101,7 +101,7 @@ def main(model, dataset, work_threads, train_times, nbatches, alpha, margin, lmb
     con.set_alpha(model_info['alpha'])
     con.set_margin(model_info['margin'])
     con.set_bern(model_info['bern'])
-    con.set_lmbda(model_info['lmbda'])
+    # con.set_lmbda(model_info['lmbda'])
     con.set_dimension(model_info['dimension'])
     con.set_ent_neg_rate(model_info['ent_neg_rate'])
     con.set_rel_neg_rate(model_info['rel_neg_rate'])

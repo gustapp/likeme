@@ -15,8 +15,8 @@ def restore_model(model_path):
 
     con = config.Config()
     con.set_in_path('./data/benchmarks/{}/'.format(model_info['dataset']))
-    con.set_test_link_prediction(model_info['test_link_prediction'])
-    con.set_test_triple_classification(model_info['test_triple_classification'])
+    # con.set_test_link_prediction(model_info['test_link_prediction'])
+    # con.set_test_triple_classification(model_info['test_triple_classification'])
     con.set_work_threads(model_info['work_threads'])
     con.set_dimension(model_info['dimension'])
     con.set_import_files('./models/{}/{}/model.vec.tf'.format(model_info['dataset'], model_info['timestamp']))

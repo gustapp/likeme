@@ -67,8 +67,8 @@ class Config(object):
 		r'''
 		import essential files and set essential interfaces for triple classification
 		'''
-		self.lib.importTestFiles()
-		self.lib.importTypeFiles()
+		# self.lib.importTestFiles()
+		# self.lib.importTypeFiles()
 
 		self.test_pos_h = np.zeros(self.lib.getTestTotal(), dtype = np.int64)
 		self.test_pos_t = np.zeros(self.lib.getTestTotal(), dtype = np.int64)
