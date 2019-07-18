@@ -92,5 +92,6 @@ target/
 /data/
 /models/
 /release/
+/reports/
 
 mid2name.tsv

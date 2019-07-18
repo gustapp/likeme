@@ -3,11 +3,12 @@ import embeddings
 import tensorflow as tf
 import numpy as np
 import json
+import _pickle as pickle
 from restore_model import restore_model
 from util.tools import get_mid2name
 
 # Restore Embedding Model
-model_info, con = restore_model('./models/FB15K/1906202000/model_info.json')
+model_info, con = restore_model('./models/FB15K/1906171235/model_info.json')
 con.restore_tensorflow()
 
 # Load Dictionaries
@@ -41,9 +42,9 @@ test2id_df.columns = ['head', 'tail', 'relation']
 # # Target Relation
 # target_rel = '/people/person/religion'
 
-for row in test2id_df.iterrows():
+for row in list(test2id_df.iterrows())[7:]:
     eh_id, et_id, r_id = row[1]
-    res_id = [et_id]
+    # res_id = [et_id]
 
     target_rel = r2i_df[(r2i_df['id'] == r_id)]['relation'].values[0]
 
@@ -56,11 +57,28 @@ for row in test2id_df.iterrows():
     """ head entity vector """
     eh_vec = ke_ent[eh_id]
     r_vec = ke_rel[r_id]
-    et_vec = ke_ent[res_id]
+    # et_vec = ke_ent[res_id]
 
-    exempl_tails = con.predict_tail_entity(h=eh_id, r=r_id, k=10)
+    # Locate neighborhood
+    import numpy as np
 
-    dbg = [np.mean(abs(eh_vec + r_vec - ke_ent[x])) for x in exempl_tails]
+    tail_cands = con.predict_tail_entity(h=eh_id, r=r_id, k=5)
+    
+    et_id = tail_cands[0] # hits@1 tail
+    res_id = [et_id]
+
+    head_marks_total = []
+    for tail_cand in tail_cands:
+        head_marks = con.predict_head_entity(t=tail_cand, r=r_id, k=10)
+        head_marks_total.append(head_marks)
+
+    # calculate variance using a list comprehension
+    var_res = sum(np.mean(abs(ke_ent[xi] - eh_vec)) ** 2 for xi in head_marks_total) / len(head_marks_total)
+
+    var_res = var_res**(1/2)
+
+    dbg = [np.mean(abs(eh_vec - ke_ent[x])) for x in head_marks_total]
+
 
     """ Generate perturbed set of instances """
     import numpy as np
@@ -68,7 +86,7 @@ for row in test2id_df.iterrows():
     e = eh_vec
     n_instances = 5000
     dimension = model_info['dimension']
-    noise_rate = 0.05
+    noise_rate = var_res
 
     e_hat = []
     for i in range(0, n_instances):
@@ -85,7 +103,7 @@ for row in test2id_df.iterrows():
 
     """ Minimize search area by choosing only the nearest neighbors """
     head_ent = eh_id
-    tail_ent = 7611
+    # tail_ent = 7611
     rel = r_id
 
     k_nn = 5
@@ -146,7 +164,7 @@ for row in test2id_df.iterrows():
     """ Build local dataset """
     feats_names = [s + '|' + r2i_df['relation'].iloc[[i]].values[0] for i,s in feats_ids]
     e_hat_feats_df = pd.DataFrame(data=list(map(list,zip(*e_hat_feats))), columns=feats_names)
-    e_hat_feats_df.to_csv('./data/head_feats/{}_{}_{}.csv'.format(eh_id, et_id, r_id))
+    e_hat_feats_df.to_csv('./data/lpf/{}_{}_{}.csv'.format(eh_id, et_id, r_id))
 
     """ *** Interpretable Model *** """
         
@@ -207,14 +225,28 @@ for row in test2id_df.iterrows():
         confusion_matrix = confusion_matrix(y_test, y_pred)
         print(confusion_matrix)
 
+        # Save Model
+        with open('./models/linreg/{}_{}_{}_clf.pkl'.format(eh_id, et_id, r_id), 'wb') as fid:
+            pickle.dump(logreg, fid)
+
+        # Save Confusion Matrix
+        tp, fn = confusion_matrix[0]
+        fp, tn = confusion_matrix[1]
+
+        mc_df = pd.DataFrame(data={'TP': [tp], 'FP': [fp], 'FN': [fn], 'TN': [tn]})
+        mc_df.to_csv('./models/linreg/{}_{}_{}_cm.csv'.format(eh_id, et_id, r_id))
+
         # Feature Importance on Logit
         weights = logreg.coef_
         labels = intrp_label
 
         exp_df = pd.DataFrame(data={'labels': labels, 'weights': weights[0]})
         exp_df.sort_values('weights', inplace=True, ascending=False)
-        return exp_df.head(10)
+        return exp_df
 
-    reasons = explain(e_hat_feats_df, label, target_rel)
+    for tail_cand in tail_cands:
+        feats_ite_df = pd.DataFrame(data=list(map(list,zip(*e_hat_feats))), columns=feats_names)
+        reasons = explain(feats_ite_df, tail_cand, target_rel)
+        reasons.to_csv('./reports/explanations/{}_{}_{}.csv'.format(eh_id, tail_cand, r_id))
 
-    print('{}'.format(reasons))
+    # print('{}'.format(reasons))
