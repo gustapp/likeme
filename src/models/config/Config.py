@@ -54,8 +54,8 @@ class Config(object):
 		r'''
 		import essential files and set essential interfaces for link prediction
 		'''
-		self.lib.importTestFiles()
-		self.lib.importTypeFiles()
+		# self.lib.importTestFiles()
+		# self.lib.importTypeFiles()
 		self.test_h = np.zeros(self.lib.getEntityTotal(), dtype = np.int64)
 		self.test_t = np.zeros(self.lib.getEntityTotal(), dtype = np.int64)
 		self.test_r = np.zeros(self.lib.getEntityTotal(), dtype = np.int64)
